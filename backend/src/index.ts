@@ -2,29 +2,9 @@ import { startCards, CARDS_COMPLETE } from "./core/domain/Cards.js";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import type { Cards, GameRoom, Player } from "./interfaces/index.js";
 
 startCards();
-
-// ==========================================
-// INTERFACES E CONFIGURAÇÃO DE ESTADO (MEMÓRIA)
-// ==========================================
-
-interface Player {
-  id: string;
-  username: string;
-  isHost: boolean;
-  points: number;
-  inGame: boolean;
-  cards: any[]; // As cartas que este jogador tem na mão
-}
-
-interface GameRoom {
-  roomCode: string;
-  status: "waiting" | "playing" | "finished";
-  players: Player[];
-  deck: any[];
-  currentTurnIndex: number; // Guarda a posição (0, 1, 2...) de quem está jogando agora
-}
 
 // Onde todas as salas ativas ficarão guardadas na memória do Node
 const activeRooms: Record<string, GameRoom> = {};
@@ -198,7 +178,7 @@ io.on("connection", (socket) => {
     room.players.forEach((player) => {
       player.cards = [];
       const cartaPuxada = puxarCartaDaSala(room);
-      player.cards.push(cartaPuxada);
+      if (cartaPuxada) player.cards.push(cartaPuxada);
       checkCards(cartaPuxada, player, roomCode);
       console.log(`[Start] ${player.username} recebeu:`, cartaPuxada);
     });
@@ -229,7 +209,7 @@ io.on("connection", (socket) => {
 
     // Sorteia e insere a nova carta na mão do jogador atual
     const novaCarta = puxarCartaDaSala(room);
-    jogadorAtual.cards.push(novaCarta);
+    if (novaCarta) jogadorAtual.cards.push(novaCarta);
     checkCards(novaCarta, jogadorAtual, roomCode);
 
     console.log(`${jogadorAtual.username} puxou:`, novaCarta);
