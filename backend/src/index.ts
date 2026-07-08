@@ -1,68 +1,21 @@
-import { startCards, CARDS_COMPLETE } from "./core/domain/Cards.js";
-import express from "express";
-import { createServer } from "http";
-import { Server } from "socket.io";
-import type { Cards, GameRoom, Player } from "./interfaces/index.js";
+import { io, app, httpServer } from "./config/config.js";
+import { DECK } from "./core/CardEngine.js";
+import type { GameRoom, Player } from "./interfaces/index.js";
+import router from "./router/routes.js";
 
-startCards();
-
-// Onde todas as salas ativas ficarão guardadas na memória do Node
 const activeRooms: Record<string, GameRoom> = {};
 
-// ==========================================
-// CONFIGURAÇÃO DO SERVIDOR EXPRESS + SOCKET.IO
-// ==========================================
+app.get("/health", (req, res) => res.send("Server is running"));
 
-const app = express();
-app.use(express.json());
-
-const httpServer = createServer(app);
-
-const io = new Server(httpServer, {
-  cors: {
-    origin: "*",
-  },
-});
-
-// Endpoint HTTP tradicional para CRIAR a sala de forma limpa na memória
-app.post("/api/rooms", (req, res) => {
-  const { username } = req.body;
-
-  const roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-
-  // Inicializa a sala vazia na memória global
-  activeRooms[roomCode] = {
-    roomCode,
-    status: "waiting",
-    players: [],
-    deck: [],
-    currentTurnIndex: 0,
-  };
-
-  console.log(`Sala ${roomCode} criada por ${username} via HTTP`);
-  console.log(activeRooms);
-  res.status(201).json({ roomCode });
-});
-
-//===========================================
-// FUNÇÕES UTEIS
-//===========================================
-
-// ==========================================
-// GERENCIADOR DE CONEXÕES WEBSOCKET
-// ==========================================
+app.use(router);
 
 io.disconnectSockets(true);
 
 io.on("connection", (socket) => {
   console.log(`Usuário conectado: ${socket.id}`);
 
-  // ------------------------------------------
-  // FUNÇÕES AUXILIARES DE JOGO
-  // ------------------------------------------
-
   const gerarBaralhoNovo = () => {
-    return [...CARDS_COMPLETE];
+    return [...DECK];
   };
   const checkCards = (card: any, player: any, roomCode: any) => {
     if (Number(card.value)) player.points += Number(card.value);

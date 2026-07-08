@@ -1,8 +1,8 @@
-import type { Cards } from "../../interfaces/Cards.js";
+import type { Card } from "../interfaces/Cards.js";
 
-export const CARDS_COMPLETE: Cards[] = [];
+export const DECK: Card[] = [];
 
-export const startCards = (): void => {
+function InitDeck() {
   const cardConfig: { type: string; count: number }[] = [
     { type: "0", count: 1 },
     { type: "1", count: 1 },
@@ -20,20 +20,22 @@ export const startCards = (): void => {
     { type: "freeze", count: 4 },
     { type: "extra heart", count: 2 },
     { type: "flip three", count: 3 },
-    { type: "+2", count: 2 },
-    { type: "+4", count: 2 },
-    { type: "+6", count: 2 },
-    { type: "+8", count: 2 },
-    { type: "+10", count: 2 },
-    { type: "X2", count: 2 },
+    { type: "+ 2", count: 2 },
+    { type: "+ 4", count: 2 },
+    { type: "+ 6", count: 2 },
+    { type: "+ 8", count: 2 },
+    { type: "+ 10", count: 2 },
+    { type: "X 2", count: 2 },
   ];
 
   let currentId = 0;
 
   for (const config of cardConfig) {
     for (let j = 0; j < config.count; j++) {
-      CARDS_COMPLETE.push({ id: currentId, value: config.type });
+      DECK.push({ id: currentId, value: config.type });
       currentId++;
     }
   }
-};
+}
+
+InitDeck();

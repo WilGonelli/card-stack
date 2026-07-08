@@ -1,4 +1,4 @@
-import type { Cards } from "./Cards.js";
+import type { Card } from "./Cards.js";
 
 export interface Player {
   id: string;
@@ -6,5 +6,5 @@ export interface Player {
   isHost: boolean;
   points: number;
   inGame: boolean;
-  cards: Cards[];
+  cards: Card[];
 }
