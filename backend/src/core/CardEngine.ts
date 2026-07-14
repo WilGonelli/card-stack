@@ -18,7 +18,7 @@ function InitDeck() {
     { type: "11", count: 11 },
     { type: "12", count: 12 },
     { type: "freeze", count: 4 },
-    { type: "extra heart", count: 2 },
+    { type: "extra health", count: 2 },
     { type: "flip three", count: 3 },
     { type: "+ 2", count: 2 },
     { type: "+ 4", count: 2 },

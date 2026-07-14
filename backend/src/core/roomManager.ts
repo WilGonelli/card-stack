@@ -7,8 +7,9 @@ export const RoomManager = {
     return activeRooms[roomId];
   },
 
-  saveRoom(roomId: string, roomData: GameRoom): void {
+  saveRoom(roomId: string, roomData: GameRoom): GameRoom {
     activeRooms[roomId] = roomData;
+    return activeRooms[roomId];
   },
 
   deleteRoom(roomId: string): void {

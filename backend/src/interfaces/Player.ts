@@ -7,4 +7,6 @@ export interface Player {
   points: number;
   inGame: boolean;
   cards: Card[];
+  specialCards: Card[];
+  isFrozen: boolean;
 }

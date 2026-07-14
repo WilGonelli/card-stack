@@ -14,6 +14,7 @@ export const CreateRoom = async (req: Request, res: Response) => {
       players: [],
       deck: [],
       currentTurnIndex: 0,
+      actionPendingFrom: undefined,
     };
 
     RoomManager.saveRoom(roomCode, newActiveRoom);
