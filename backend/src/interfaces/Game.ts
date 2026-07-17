@@ -6,5 +6,7 @@ export interface GameRoom {
   players: Player[];
   deck: Card[];
   currentTurnIndex: number;
+  currentRound: number;
   actionPendingFrom: string | undefined;
+  currentPlayer: string | undefined;
 }

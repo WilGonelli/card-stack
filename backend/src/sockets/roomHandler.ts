@@ -47,11 +47,17 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
       if (room.players.length < 2) {
         return socket.emit("room:error", "Players insuficiente para inicio.");
       }
+      const host = room.players.find((p) => p.isHost);
+      if (host?.id !== socket.id) {
+        return socket.emit("room:error", "Somente o host pode iniciar o game.");
+      }
 
       room.status = "playing";
       room.players.map((player) => {
         player.inGame = true;
       });
+      room.currentPlayer = socket.id;
+      room.currentRound = 1;
 
       const updatedRoom = RoomManager.saveRoom(roomId, room);
 

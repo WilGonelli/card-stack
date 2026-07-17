@@ -27,7 +27,7 @@ app.get("/health", (req, res) => res.send("Server is running"));
 app.use(router);
 
 // 6. ATENÇÃO: Você deve dar o .listen no 'httpServer', e NÃO no 'app'
-const PORT = 3000;
+const PORT = 3001;
 httpServer.listen(PORT, () => {
   console.log(`Servidor rodando perfeitamente na porta ${PORT} 🚀`);
 });
