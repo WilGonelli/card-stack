@@ -15,8 +15,12 @@ export const CreateRoom = async (req: Request, res: Response) => {
       deck: [],
       currentTurnIndex: 0,
       actionPendingFrom: undefined,
+      pendingActionType: undefined,
+      flipThreeTargetId: undefined,
+      flipThreeCount: 0,
       currentPlayer: undefined,
       currentRound: 0,
+      discardPile: [],
     };
 
     RoomManager.saveRoom(roomCode, newActiveRoom);

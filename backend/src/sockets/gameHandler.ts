@@ -1,166 +1,258 @@
 import { Server, Socket } from "socket.io";
 import { RoomManager } from "../core/roomManager.js";
 import {
-  cardsCheck,
   numberCheck,
   puxarCartaDaSala,
   gerarBaralhoNovo,
-  getNextActivePlayer,
   freezePlayer,
-  exitPlayer,
+  standPlayer,
   passarProximoTurno,
   encerrarRodada,
+  processNumberCard,
+  processSpecialCard,
+  processFlipThreeCards,
+  checkRoundEnd,
+  checkUniqueCardsBonus,
+  sanitizeRoom,
 } from "../core/GameEngine.js";
 import type { Card } from "../interfaces/Cards.js";
 
+const SPECIAL_ACTION_LIST = ["x 2", "+ 2", "+ 4", "+ 6", "+ 8", "+ 10", "extra health"];
+
 export function registerGameHandlers(io: Server, socket: Socket) {
+
+  // ── Draw a card ───────────────────────────────────────────────
   socket.on("game:pull", async (data: { roomId: string }) => {
     try {
       const { roomId } = data;
-
-      // 1. Busca a sala no Core
       const room = RoomManager.getRoom(roomId);
-      if (!room) {
-        // ERRO DIRECIONADO: Usa apenas 'socket.emit' para falar só com quem disparou o evento
-        return socket.emit("game:error", "Sala não encontrada.");
-      }
-      if (room.status !== "playing") {
-        return socket.emit("game:error", "Jogo não iniciado.");
-      }
-      if (room.currentPlayer !== socket.id) {
-        return socket.emit("game:error", "Não é sua vez.");
-      }
+      if (!room) return socket.emit("game:error", "Sala não encontrada.");
+      if (room.status !== "playing") return socket.emit("game:error", "Jogo não iniciado.");
+      if (room.currentPlayer !== socket.id) return socket.emit("game:error", "Não é sua vez.");
       if (room.actionPendingFrom) {
-        return socket.emit(
-          "game:error",
-          `Aguardando ação do player ${room.actionPendingFrom}.`,
-        );
+        return socket.emit("game:error", `Aguardando ação de ${room.actionPendingFrom}.`);
       }
 
-      if (room.deck.length < 1) {
-        room.deck = gerarBaralhoNovo();
-      }
-      // 2. Executa a lógica pura do jogo (Simulação do seu Core)
+      if (room.deck.length < 1) room.deck = gerarBaralhoNovo();
+
       const card = puxarCartaDaSala(room) as Card;
-      const isNumber = numberCheck(card);
+      if (!card) return socket.emit("game:error", "Baralho vazio.");
 
-      const nextPlayer = await getNextActivePlayer(room, socket.id);
+      const player = room.players.find((p) => p.id === socket.id);
+      if (!player) return socket.emit("game:error", "Jogador não encontrado.");
 
-      if (!nextPlayer) {
-        // ninguém ativo → encerra rodada
-        encerrarRodada(room, io);
+      const cardVal = card.value.toLowerCase().trim();
+
+      // ── Freeze ──────────────────────────────────────────────
+      if (cardVal === "freeze") {
+        const others = room.players.filter((p) => p.inGame && p.id !== socket.id);
+        if (others.length === 0) {
+          freezePlayer(room, socket.id);
+          io.to(roomId).emit("game:log", {
+            message: `${player.username} não tinha alvos e se congelou!`,
+          });
+          if (checkRoundEnd(room)) {
+            encerrarRodada(room, io);
+            return;
+          }
+          passarProximoTurno(room);
+          io.to(roomId).emit("game:updated", sanitizeRoom(room));
+          return;
+        }
+        room.actionPendingFrom = socket.id;
+        room.pendingActionType = "freeze";
+        io.to(roomId).emit("game:action_pending", {
+          action: "freeze",
+          pulledBy: socket.id,
+          pulledByUsername: player.username,
+          targets: others.map((p) => ({ id: p.id, username: p.username })),
+          message: `${player.username} puxou Freeze! Selecione um alvo.`,
+        });
+        RoomManager.saveRoom(roomId, room);
         return;
       }
 
-      // caso contrário, segue fluxo normal
-
-      if (isNumber) {
-        // Atualiza as cartas do jogador usando um find em vez de map (mais performático e legível)
-        const player = room.players.find((p) => p.id === socket.id);
-        if (player) {
-          player.cards.push(card);
-        }
-
-        // ATUALIZAÇÃO GERAL: Envia a sala atualizada para TODOS na sala
-        if (nextPlayer) room.currentPlayer = nextPlayer;
-        passarProximoTurno(room);
-        io.to(roomId).emit("game:updated", room);
-      }
-
-      // 3. Verificação de Cartas de Ação (Freeze ou Flip Three)
-      const cardValueLower = card.value.toLowerCase();
-      if (cardValueLower === "freeze" || cardValueLower === "flip three") {
-        // Filtra os jogadores ativos usando o seu filtro
-        const activityPlayers = room.players.filter((p) => p.inGame);
-        if (activityPlayers.length < 2) {
-          if (cardValueLower === "freeze") {
-            freezePlayer(room, socket.id);
-            exitPlayer(room, socket.id);
+      // ── Flip Three ──────────────────────────────────────────
+      if (cardVal === "flip three") {
+        const others = room.players.filter((p) => p.inGame && p.id !== socket.id);
+        if (others.length === 0) {
+          const result = processFlipThreeCards(room, player);
+          io.to(roomId).emit("game:flip_three_result", {
+            targetUsername: player.username,
+            targetId: player.id,
+            cards: result.cardResults,
+          });
+          if (player.inGame === false) {
+            io.to(roomId).emit("game:log", {
+              message: `${player.username} se aplicou Flip Three e foi eliminado!`,
+            });
+            if (checkRoundEnd(room)) {
+              encerrarRodada(room, io);
+              return;
+            }
           }
-          return io
-            .to(roomId)
-            .emit(
-              "game:updated",
-              `Jogador ${socket.id} recebeu a carta ${cardValueLower}`,
-            );
+          passarProximoTurno(room);
+          io.to(roomId).emit("game:updated", sanitizeRoom(room));
+          return;
+        }
+        room.actionPendingFrom = socket.id;
+        room.pendingActionType = "flip_three";
+        io.to(roomId).emit("game:action_pending", {
+          action: "flip_three",
+          pulledBy: socket.id,
+          pulledByUsername: player.username,
+          targets: others.map((p) => ({ id: p.id, username: p.username })),
+          message: `${player.username} puxou Flip Three! Selecione um alvo para virar 3 cartas.`,
+        });
+        RoomManager.saveRoom(roomId, room);
+        return;
+      }
+
+      // ── Number card ─────────────────────────────────────────
+      if (numberCheck(card)) {
+        const result = processNumberCard(player, card);
+
+        if (result.eliminated) {
+          io.to(roomId).emit("game:log", {
+            message: `${player.username} tirou ${card.value} duplicada e foi eliminado!`,
+          });
+          if (checkRoundEnd(room)) {
+            encerrarRodada(room, io);
+            return;
+          }
+          passarProximoTurno(room);
+          io.to(roomId).emit("game:updated", sanitizeRoom(room));
+          return;
         }
 
-        // EMIT CONDICIONAL E ESTRUTURADO:
-        // Avisamos a sala INTEIRA que o jogo travou esperando uma ação do 'playerId'
-        io.to(roomId).emit("game:action_pending", {
-          action: cardValueLower,
-          pulledBy: socket.id, // Quem puxou a carta
-          targets: activityPlayers, // Lista de alvos válidos
-          message: `Aguardando ${socket.id} selecionar um jogador para aplicar o ${card.value}.`,
-        });
-        room.actionPendingFrom = socket.id;
-        RoomManager.saveRoom(roomId, room);
-      }
-      const specialList = ["x 2", "+ 2", "+ 4", "+ 6", "+ 8", "+ 10"];
-      if (specialList.includes(card.value.toLowerCase())) {
-        const player = room.players.find((p) => p.id === socket.id);
-        if (player) {
-          player.specialCards.push(card);
+        if (checkUniqueCardsBonus(player)) {
+          io.to(roomId).emit("game:log", {
+            message: `${player.username} atingiu 7 cartas numéricas únicas! Rodada encerrada com bônus!`,
+          });
+          encerrarRodada(room, io);
+          return;
         }
-        if (nextPlayer) room.currentPlayer = nextPlayer;
-        io.to(roomId).emit("game:updated", room);
+
+        passarProximoTurno(room);
+        io.to(roomId).emit("game:updated", sanitizeRoom(room));
+        return;
       }
+
+      // ── Special cards (+2, +4, +6, +8, +10, X2, extra health) ──
+      if (SPECIAL_ACTION_LIST.includes(cardVal)) {
+        processSpecialCard(player, card);
+        io.to(roomId).emit("game:log", {
+          message: `${player.username} puxou ${card.value}.`,
+        });
+        passarProximoTurno(room);
+        io.to(roomId).emit("game:updated", sanitizeRoom(room));
+        return;
+      }
+
+      // ── Fallback (shouldn't happen) ────────────────────────
+      passarProximoTurno(room);
+      io.to(roomId).emit("game:updated", sanitizeRoom(room));
     } catch (err: any) {
-      // Captura erros inesperados e avisa APENAS o jogador que causou
       socket.emit("game:error", err.message || "Erro ao puxar carta.");
     }
   });
 
+  // ── Stand (stop drawing) ──────────────────────────────────────
+  socket.on("game:stand", (data: { roomId: string }) => {
+    try {
+      const { roomId } = data;
+      const room = RoomManager.getRoom(roomId);
+      if (!room) return socket.emit("game:error", "Sala não encontrada.");
+      if (room.status !== "playing") return socket.emit("game:error", "Jogo não iniciado.");
+      if (room.currentPlayer !== socket.id) return socket.emit("game:error", "Não é sua vez.");
+      if (room.actionPendingFrom) {
+        return socket.emit("game:error", "Resolva a ação pendente antes de parar.");
+      }
+
+      const player = room.players.find((p) => p.id === socket.id);
+      if (!player) return socket.emit("game:error", "Jogador não encontrado.");
+
+      standPlayer(room, socket.id);
+      io.to(roomId).emit("game:log", {
+        message: `${player.username} parou de puxar cartas.`,
+      });
+
+      if (checkRoundEnd(room)) {
+        encerrarRodada(room, io);
+        return;
+      }
+
+      passarProximoTurno(room);
+      io.to(roomId).emit("game:updated", sanitizeRoom(room));
+    } catch (err: any) {
+      socket.emit("game:error", err.message || "Erro ao parar.");
+    }
+  });
+
+  // ── Player selected target for freeze / flip three ────────────
   socket.on(
     "game:player_selected",
     (data: { roomId: string; targetPlayerId: string }) => {
       try {
         const { roomId, targetPlayerId } = data;
-
-        // 1. Quem disparou o evento de verdade? Pegamos direto do socket físico!
         const actualPlayerId = socket.id;
 
-        // 2. Busca a sala no Core
         const room = RoomManager.getRoom(roomId);
-        if (!room) {
-          return socket.emit("game:error", "Sala não encontrada.");
-        }
-
-        // 3. SEGURANÇA: Validar se quem mandou o evento é REALMENTE quem puxou a carta de ação
-        // Para isso, sua sala precisa registrar de quem é a vez ou quem tem uma ação pendente.
-        // Supondo que você salvou isso no estado da sala (ex: room.actionPendingFrom)
+        if (!room) return socket.emit("game:error", "Sala não encontrada.");
         if (room.actionPendingFrom !== actualPlayerId) {
-          return socket.emit(
-            "game:error",
-            "Não é a sua vez de selecionar um jogador!",
-          );
+          return socket.emit("game:error", "Não é a sua vez de selecionar um jogador.");
         }
 
-        // 4. VALIDAÇÃO: O alvo escolhido é válido? (Está na sala e em jogo?)
+        const puller = room.players.find((p) => p.id === actualPlayerId);
         const targetPlayer = room.players.find((p) => p.id === targetPlayerId);
-        console.log(targetPlayer);
         if (!targetPlayer || !targetPlayer.inGame) {
-          return socket.emit(
-            "game:error",
-            "Jogador selecionado inválido ou fora de jogo.",
-          );
+          return socket.emit("game:error", "Jogador selecionado inválido ou fora de jogo.");
         }
 
-        // 5. CORE: Aplica o efeito da carta (Ex: Freeze)
-        // Aqui você altera o estado do alvo no seu modelo de dados
-        freezePlayer(room, targetPlayer.id);
-        exitPlayer(room, targetPlayer.id);
+        const actionType = room.pendingActionType;
 
-        // 6. LIMPEZA: Remove a pendência da sala para o jogo continuar
+        // ── Resolve Freeze ────────────────────────────────────
+        if (actionType === "freeze") {
+          freezePlayer(room, targetPlayer.id);
+          io.to(roomId).emit("game:log", {
+            message: `${puller?.username} congelou ${targetPlayer.username}!`,
+          });
+        }
+
+        // ── Resolve Flip Three ────────────────────────────────
+        if (actionType === "flip_three") {
+          const result = processFlipThreeCards(room, targetPlayer);
+          io.to(roomId).emit("game:flip_three_result", {
+            targetUsername: targetPlayer.username,
+            targetId: targetPlayer.id,
+            pulledByUsername: puller?.username,
+            cards: result.cardResults,
+          });
+
+          const wasEliminated = result.cardResults.some(
+            (r) => r.effect === "busted" || r.effect === "freeze",
+          );
+          if (wasEliminated) {
+            io.to(roomId).emit("game:log", {
+              message: `${targetPlayer.username} foi eliminado durante o Flip Three de ${puller?.username}!`,
+            });
+          }
+        }
+
+        // ── Clear pending & advance turn ──────────────────────
         room.actionPendingFrom = undefined;
+        room.pendingActionType = undefined;
+        room.flipThreeTargetId = undefined;
+        room.flipThreeCount = 0;
 
-        // 7. ATUALIZAÇÃO GERAL: Avisa a sala inteira que o efeito foi aplicado e o jogo atualizou
-        io.to(roomId).emit("game:updated", room);
+        if (checkRoundEnd(room)) {
+          encerrarRodada(room, io);
+          return;
+        }
 
-        // Opcional: Enviar um log de texto para o chat do jogo saber o que aconteceu
-        io.to(roomId).emit("game:log", {
-          message: `${socket.id} congelou o jogador ${targetPlayer.username}!`,
-        });
+        passarProximoTurno(room);
+        RoomManager.saveRoom(roomId, room);
+        io.to(roomId).emit("game:updated", sanitizeRoom(room));
       } catch (error: any) {
         socket.emit("game:error", "Erro ao processar a seleção do jogador.");
       }

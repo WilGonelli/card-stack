@@ -8,5 +8,9 @@ export interface GameRoom {
   currentTurnIndex: number;
   currentRound: number;
   actionPendingFrom: string | undefined;
+  pendingActionType: "freeze" | "flip_three" | undefined;
+  flipThreeTargetId: string | undefined;
+  flipThreeCount: number;
   currentPlayer: string | undefined;
+  discardPile: Card[];
 }

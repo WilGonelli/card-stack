@@ -9,4 +9,5 @@ export interface Player {
   cards: Card[];
   specialCards: Card[];
   isFrozen: boolean;
+  eliminatedBy: "freeze" | "duplicate" | "stand" | undefined;
 }

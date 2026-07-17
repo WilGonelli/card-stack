@@ -1,5 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { RoomManager } from "../core/roomManager.js";
+import { sanitizeRoom } from "../core/GameEngine.js";
 import type { Player } from "../interfaces/index.js";
 
 export function registerRoomHandlers(io: Server, socket: Socket) {
@@ -21,13 +22,14 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
         inGame: false,
         isHost: room.players.length === 0,
         isFrozen: false,
+        eliminatedBy: undefined,
       };
 
       const updatedRoom = RoomManager.addPlayerToRoom(roomId, newPlayer);
 
       socket.join(roomId);
 
-      io.to(roomId).emit("room:updated", updatedRoom);
+      io.to(roomId).emit("room:updated", sanitizeRoom(updatedRoom));
 
       console.log(`Jogador ${playerName} entrou na sala ${roomId}`);
     } catch (error: any) {
@@ -53,15 +55,16 @@ export function registerRoomHandlers(io: Server, socket: Socket) {
       }
 
       room.status = "playing";
-      room.players.map((player) => {
+      room.players.forEach((player) => {
         player.inGame = true;
+        player.eliminatedBy = undefined;
       });
       room.currentPlayer = socket.id;
       room.currentRound = 1;
 
       const updatedRoom = RoomManager.saveRoom(roomId, room);
 
-      io.to(roomId).emit("room:updated", updatedRoom);
+      io.to(roomId).emit("room:updated", sanitizeRoom(updatedRoom));
 
       console.log(`Jogador ${playerName} começou o jogo na sala ${roomId}`);
     } catch (error: any) {
