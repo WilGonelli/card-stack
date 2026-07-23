@@ -75,19 +75,19 @@ const getUniqueNumberCount = (cards: Card[]): number => {
 export const processNumberCard = (
   player: Player,
   card: Card,
-): { eliminated: boolean; eliminatedBy: "duplicate" | undefined } => {
+): { eliminated: boolean; eliminatedBy: "duplicate" | undefined; extraHealthUsed: boolean } => {
   if (cardsCheck(player.cards, card)) {
     const extraHealthIndex = getExtraHealthIndex(player.specialCards);
     if (extraHealthIndex !== -1) {
       player.specialCards.splice(extraHealthIndex, 1);
-      return { eliminated: false, eliminatedBy: undefined };
+      return { eliminated: false, eliminatedBy: undefined, extraHealthUsed: true };
     }
     player.inGame = false;
     player.eliminatedBy = "duplicate";
-    return { eliminated: true, eliminatedBy: "duplicate" };
+    return { eliminated: true, eliminatedBy: "duplicate", extraHealthUsed: false };
   }
   player.cards.push(card);
-  return { eliminated: false, eliminatedBy: undefined };
+  return { eliminated: false, eliminatedBy: undefined, extraHealthUsed: false };
 };
 
 export const processSpecialCard = (player: Player, card: Card): void => {
@@ -99,24 +99,33 @@ export const processFlipThreeCards = (
   targetPlayer: Player,
 ): { cardResults: { card: Card; effect: string }[] } => {
   const cardResults: { card: Card; effect: string }[] = [];
+  let stopped = false;
 
   for (let i = 0; i < 3; i++) {
     const card = puxarCartaDaSala(room);
     if (!card) break;
 
+    if (stopped) {
+      cardResults.push({ card, effect: "not_applied" });
+      continue;
+    }
+
     if (numberCheck(card)) {
       const result = processNumberCard(targetPlayer, card);
       if (result.eliminated) {
         cardResults.push({ card, effect: "busted" });
-        break;
+        stopped = true;
+      } else if (result.extraHealthUsed) {
+        cardResults.push({ card, effect: "extra_health_used" });
+      } else {
+        cardResults.push({ card, effect: "added" });
       }
-      cardResults.push({ card, effect: "added" });
     } else {
       const val = card.value.toLowerCase().trim();
       if (val === "freeze") {
         freezePlayer(room, targetPlayer.id);
         cardResults.push({ card, effect: "freeze" });
-        break;
+        stopped = true;
       } else if (val === "flip three") {
         processSpecialCard(targetPlayer, card);
         cardResults.push({ card, effect: "stored" });
@@ -244,6 +253,8 @@ export const encerrarRodada = (room: GameRoom, io: Server): void => {
     };
   });
 
+  const finishedRound = room.currentRound;
+
   const winner = room.players.find((p) => p.points >= WIN_SCORE);
   if (winner) {
     room.status = "finished";
@@ -259,9 +270,27 @@ export const encerrarRodada = (room: GameRoom, io: Server): void => {
     return;
   }
 
+  room.status = "waiting_confirm";
+  room.confirmedPlayers = [];
+  room.roundStarterIndex = (room.roundStarterIndex + 1) % room.players.length;
+  resetRoundState(room);
+
+  if (io) {
+    io.to(room.roomCode).emit("game:round_end", {
+      round: finishedRound,
+      resultados,
+      message: `Rodada ${finishedRound} encerrada. Aguardando todos confirmarem para a proxima rodada.`,
+    });
+    io.to(room.roomCode).emit("game:updated", sanitizeRoom(room));
+  }
+};
+
+export const startNextRound = (room: GameRoom, io: Server): void => {
+  room.status = "playing";
   room.currentRound += 1;
-  room.currentTurnIndex = 0;
-  room.currentPlayer = room.players[0]?.id;
+  room.currentPlayer = room.players[room.roundStarterIndex]?.id;
+  room.currentTurnIndex = room.roundStarterIndex;
+  room.confirmedPlayers = [];
   room.players.forEach((p) => {
     p.inGame = true;
     p.isFrozen = false;
@@ -270,11 +299,6 @@ export const encerrarRodada = (room: GameRoom, io: Server): void => {
   resetRoundState(room);
 
   if (io) {
-    io.to(room.roomCode).emit("game:round_end", {
-      round: room.currentRound - 1,
-      resultados,
-      message: `Rodada ${room.currentRound - 1} encerrada.`,
-    });
     io.to(room.roomCode).emit("game:updated", sanitizeRoom(room));
   }
 };

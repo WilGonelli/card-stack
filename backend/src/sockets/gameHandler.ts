@@ -74,35 +74,15 @@ export function registerGameHandlers(io: Server, socket: Socket) {
 
       // ── Flip Three ──────────────────────────────────────────
       if (cardVal === "flip three") {
-        const others = room.players.filter((p) => p.inGame && p.id !== socket.id);
-        if (others.length === 0) {
-          const result = processFlipThreeCards(room, player);
-          io.to(roomId).emit("game:flip_three_result", {
-            targetUsername: player.username,
-            targetId: player.id,
-            cards: result.cardResults,
-          });
-          if (player.inGame === false) {
-            io.to(roomId).emit("game:log", {
-              message: `${player.username} se aplicou Flip Three e foi eliminado!`,
-            });
-            if (checkRoundEnd(room)) {
-              encerrarRodada(room, io);
-              return;
-            }
-          }
-          passarProximoTurno(room);
-          io.to(roomId).emit("game:updated", sanitizeRoom(room));
-          return;
-        }
+        const targets = room.players.filter((p) => p.inGame && !p.isFrozen);
         room.actionPendingFrom = socket.id;
         room.pendingActionType = "flip_three";
         io.to(roomId).emit("game:action_pending", {
           action: "flip_three",
           pulledBy: socket.id,
           pulledByUsername: player.username,
-          targets: others.map((p) => ({ id: p.id, username: p.username })),
-          message: `${player.username} puxou Flip Three! Selecione um alvo para virar 3 cartas.`,
+          targets: targets.map((p) => ({ id: p.id, username: p.username })),
+          message: `${player.username} puxou Flip Three! Selecione um alvo (incluindo a si mesmo) para virar 3 cartas.`,
         });
         RoomManager.saveRoom(roomId, room);
         return;
@@ -113,6 +93,12 @@ export function registerGameHandlers(io: Server, socket: Socket) {
         const result = processNumberCard(player, card);
 
         if (result.eliminated) {
+          io.to(roomId).emit("game:duplicate_info", {
+            playerId: player.id,
+            playerUsername: player.username,
+            cardValue: card.value,
+            extraHealthUsed: false,
+          });
           io.to(roomId).emit("game:log", {
             message: `${player.username} tirou ${card.value} duplicada e foi eliminado!`,
           });
@@ -123,6 +109,18 @@ export function registerGameHandlers(io: Server, socket: Socket) {
           passarProximoTurno(room);
           io.to(roomId).emit("game:updated", sanitizeRoom(room));
           return;
+        }
+
+        if (result.extraHealthUsed) {
+          io.to(roomId).emit("game:duplicate_info", {
+            playerId: player.id,
+            playerUsername: player.username,
+            cardValue: card.value,
+            extraHealthUsed: true,
+          });
+          io.to(roomId).emit("game:log", {
+            message: `${player.username} tirou ${card.value} duplicada, mas usou Extra Health para se salvar!`,
+          });
         }
 
         if (checkUniqueCardsBonus(player)) {

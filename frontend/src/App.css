@@ -1,0 +1,501 @@
+.container {
+  max-width: 800px;
+  width: 100%;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #e94560;
+}
+
+h2 {
+  margin-bottom: 1rem;
+  color: #e94560;
+}
+
+/* ── Lobby ─────────────────────────────────── */
+.lobby {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.lobby-section {
+  background: #16213e;
+  padding: 1.5rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lobby-section h2 {
+  font-size: 1.1rem;
+}
+
+/* ── Inputs / Buttons ──────────────────────── */
+input {
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #0f3460;
+  color: #eee;
+  font-size: 0.95rem;
+}
+
+input::placeholder {
+  color: #666;
+}
+
+button {
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  border: none;
+  background: #e94560;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+button:hover {
+  background: #c81e45;
+}
+
+button:disabled {
+  background: #444;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: #533483;
+}
+
+button.secondary:hover {
+  background: #3d2566;
+}
+
+button.danger {
+  background: #a00;
+}
+
+button.danger:hover {
+  background: #800;
+}
+
+/* ── Room ──────────────────────────────────── */
+.room-code {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 0.3rem;
+  background: #16213e;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  color: #e94560;
+}
+
+/* ── Player list ───────────────────────────── */
+.player-list {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.player-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #1a1a2e;
+}
+
+.player-item:last-child {
+  border-bottom: none;
+}
+
+.player-item .name {
+  font-weight: 600;
+}
+
+/* ── All players with hands ────────────────── */
+.all-players {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.all-players h2 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.player-hand-card {
+  background: #0f3460;
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.player-hand-card:last-child {
+  margin-bottom: 0;
+}
+
+.player-hand-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.player-hand-header .name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.player-hand-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.player-item .badge {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+}
+
+.badge.host {
+  background: #e94560;
+}
+
+.badge.eliminated {
+  background: #a00;
+}
+
+.badge.frozen {
+  background: #0af;
+}
+
+.badge.stand-badge {
+  background: #888;
+}
+
+/* ── Cards display ─────────────────────────── */
+.hand {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.hand h2 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.hand-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.card-chip {
+  background: #0f3460;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.card-chip.special {
+  background: #533483;
+  color: #fff;
+}
+
+/* ── Action pending ────────────────────────── */
+.action-pending {
+  background: #e94560;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.action-pending h2 {
+  color: #fff;
+  font-size: 1rem;
+}
+
+.target-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.target-buttons button {
+  background: #fff;
+  color: #e94560;
+  font-weight: 600;
+}
+
+.target-buttons button:hover {
+  background: #ddd;
+}
+
+/* ── Logs ──────────────────────────────────── */
+.logs {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.logs h2 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.logs p {
+  font-size: 0.85rem;
+  padding: 0.15rem 0;
+  color: #aaa;
+  border-bottom: 1px solid #1a1a2e;
+}
+
+.logs p:last-child {
+  border-bottom: none;
+}
+
+/* ── Game info bar ─────────────────────────── */
+.game-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #16213e;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.game-info .highlight {
+  color: #e94560;
+  font-weight: 600;
+}
+
+/* ── Actions ───────────────────────────────── */
+.game-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.game-actions button {
+  flex: 1;
+  padding: 0.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.game-actions button:disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* ── Eliminated card ──────────────────────── */
+.eliminated-card {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.eliminated-icon {
+  font-size: 1.8rem;
+}
+
+.eliminated-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.eliminated-text strong {
+  font-size: 0.95rem;
+}
+
+.eliminated-text span {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.eliminated-freeze {
+  background: #0a3a5a;
+  border: 1px solid #0af;
+}
+
+.eliminated-duplicate {
+  background: #5a0a0a;
+  border: 1px solid #e94560;
+}
+
+.eliminated-stand {
+  background: #3a3a3a;
+  border: 1px solid #888;
+}
+
+/* ── Turn indicator ────────────────────────── */
+.turn-indicator {
+  text-align: center;
+  padding: 0.6rem;
+  background: #533483;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.turn-indicator.my-turn {
+  background: #e94560;
+}
+
+/* ── Round end / Game end ──────────────────── */
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.results-table th,
+.results-table td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #333;
+}
+
+.results-table th {
+  color: #e94560;
+}
+
+/* ── Flip three result ─────────────────────── */
+.flip-result {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.flip-result h2 {
+  font-size: 1rem;
+}
+
+.flip-card {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.flip-card.added {
+  background: #0a5;
+}
+
+.flip-card.stored {
+  background: #533483;
+}
+
+.flip-card.busted {
+  background: #a00;
+}
+
+.flip-card.freeze {
+  background: #0af;
+}
+
+/* ── Confirm round ─────────────────────────── */
+.confirm-section {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.confirm-section p {
+  color: #aaa;
+}
+
+/* ── Confirmed players chips ───────────────── */
+.confirmed-players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.confirmed-chip {
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.confirmed-chip.confirmed {
+  background: #0a5;
+  color: #fff;
+}
+
+.confirmed-chip.pending {
+  background: #333;
+  color: #888;
+}
+
+/* ── Flip three extra_health_used effect ───── */
+.flip-card.extra_health_used {
+  background: #2a7a3a;
+}
+
+.flip-card.not_applied {
+  background: #444;
+  opacity: 0.5;
+}
+
+/* ── Duplicate highlight in hand ───────────── */
+.card-chip.duplicate-active {
+  background: #e94560;
+  color: #fff;
+  font-weight: 700;
+  animation: pulse-duplicate 1s ease-in-out infinite;
+}
+
+.card-chip.duplicate-saved {
+  background: #2a7a3a;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.card-chip.extra-health-used {
+  background: #0a5;
+  color: #fff;
+  font-weight: 700;
+  animation: pulse-duplicate 1s ease-in-out infinite;
+}
+
+@keyframes pulse-duplicate {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}

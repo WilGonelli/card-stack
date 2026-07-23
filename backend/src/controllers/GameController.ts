@@ -14,6 +14,8 @@ export const CreateRoom = async (req: Request, res: Response) => {
       players: [],
       deck: [],
       currentTurnIndex: 0,
+      roundStarterIndex: 0,
+      confirmedPlayers: [],
       actionPendingFrom: undefined,
       pendingActionType: undefined,
       flipThreeTargetId: undefined,
