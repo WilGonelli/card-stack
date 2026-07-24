@@ -3,15 +3,22 @@
   width: 100%;
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 1.5rem;
+.error {
   color: #e94560;
+  text-align: center;
 }
 
-h2 {
-  margin-bottom: 1rem;
-  color: #e94560;
+.centered {
+  text-align: center;
+  color: #888;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.mt {
+  margin-top: 0.75rem;
 }
 
 /* ── Lobby ─────────────────────────────────── */
@@ -23,7 +30,7 @@ h2 {
   margin: 0 auto;
 }
 
-.lobby-section {
+.lobbySection {
   background: #16213e;
   padding: 1.5rem;
   border-radius: 8px;
@@ -32,8 +39,9 @@ h2 {
   gap: 0.75rem;
 }
 
-.lobby-section h2 {
+.lobbySection h2 {
   font-size: 1.1rem;
+  margin-bottom: 0;
 }
 
 /* ── Inputs / Buttons ──────────────────────── */
@@ -70,24 +78,24 @@ button:disabled {
   cursor: not-allowed;
 }
 
-button.secondary {
+.secondary {
   background: #533483;
 }
 
-button.secondary:hover {
+.secondary:hover {
   background: #3d2566;
 }
 
-button.danger {
+.danger {
   background: #a00;
 }
 
-button.danger:hover {
+.danger:hover {
   background: #800;
 }
 
 /* ── Room ──────────────────────────────────── */
-.room-code {
+.roomCode {
   text-align: center;
   font-size: 2rem;
   font-weight: bold;
@@ -99,15 +107,20 @@ button.danger:hover {
   color: #e94560;
 }
 
+.roomCodeSmall {
+  font-size: 1.2rem;
+  padding: 0.6rem;
+}
+
 /* ── Player list ───────────────────────────── */
-.player-list {
+.playerList {
   background: #16213e;
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
 }
 
-.player-item {
+.playerItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -115,78 +128,85 @@ button.danger:hover {
   border-bottom: 1px solid #1a1a2e;
 }
 
-.player-item:last-child {
+.playerItem:last-child {
   border-bottom: none;
 }
 
-.player-item .name {
+.name {
   font-weight: 600;
 }
 
-/* ── All players with hands ────────────────── */
-.all-players {
-  background: #16213e;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-
-.all-players h2 {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.player-hand-card {
-  background: #0f3460;
-  border-radius: 6px;
-  padding: 0.6rem 0.8rem;
-  margin-bottom: 0.5rem;
-}
-
-.player-hand-card:last-child {
-  margin-bottom: 0;
-}
-
-.player-hand-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.4rem;
-}
-
-.player-hand-header .name {
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.player-hand-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.85rem;
-}
-
-.player-item .badge {
+.badge {
   font-size: 0.75rem;
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
   margin-left: 0.5rem;
 }
 
-.badge.host {
+.host {
   background: #e94560;
 }
 
-.badge.eliminated {
+.voce {
+  background: #0a5;
+}
+
+.turno {
+  background: #e94560;
+}
+
+.eliminated {
   background: #a00;
 }
 
-.badge.frozen {
+.frozen {
   background: #0af;
 }
 
-.badge.stand-badge {
-  background: #888;
+/* ── All players with hands ────────────────── */
+.allPlayers {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.allPlayers h2 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.playerHandCard {
+  background: #0f3460;
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.playerHandCard:last-child {
+  margin-bottom: 0;
+}
+
+.playerHandHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.playerHandHeader .name {
+  font-size: 0.95rem;
+}
+
+.playerHandMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.points {
+  margin-left: 0.4rem;
 }
 
 /* ── Cards display ─────────────────────────── */
@@ -202,52 +222,62 @@ button.danger:hover {
   margin-bottom: 0.5rem;
 }
 
-.hand-cards {
+.handCards {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
 }
 
-.card-chip {
+.cardChip {
   background: #0f3460;
   padding: 0.3rem 0.6rem;
   border-radius: 4px;
   font-size: 0.85rem;
 }
 
-.card-chip.special {
+.special {
   background: #533483;
   color: #fff;
 }
 
+.noCards {
+  color: #666;
+  font-size: 0.85rem;
+}
+
 /* ── Action pending ────────────────────────── */
-.action-pending {
+.actionPending {
   background: #e94560;
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1rem;
 }
 
-.action-pending h2 {
+.actionPending h2 {
   color: #fff;
   font-size: 1rem;
+  margin-bottom: 0;
 }
 
-.target-buttons {
+.targetButtons {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
 
-.target-buttons button {
+.targetButtons button {
   background: #fff;
   color: #e94560;
   font-weight: 600;
 }
 
-.target-buttons button:hover {
+.targetButtons button:hover {
   background: #ddd;
+}
+
+.waitingText {
+  margin-top: 0.5rem;
 }
 
 /* ── Logs ──────────────────────────────────── */
@@ -277,7 +307,7 @@ button.danger:hover {
 }
 
 /* ── Game info bar ─────────────────────────── */
-.game-info {
+.gameInfo {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -288,33 +318,33 @@ button.danger:hover {
   font-size: 0.9rem;
 }
 
-.game-info .highlight {
+.highlight {
   color: #e94560;
   font-weight: 600;
 }
 
 /* ── Actions ───────────────────────────────── */
-.game-actions {
+.gameActions {
   display: flex;
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
-.game-actions button {
+.gameActions button {
   flex: 1;
   padding: 0.8rem;
   font-size: 1rem;
   font-weight: 600;
 }
 
-.game-actions button:disabled {
+.gameActions button:disabled {
   background: #333;
   color: #666;
   cursor: not-allowed;
 }
 
 /* ── Eliminated card ──────────────────────── */
-.eliminated-card {
+.eliminatedCard {
   display: flex;
   align-items: center;
   gap: 0.8rem;
@@ -323,20 +353,20 @@ button.danger:hover {
   margin-bottom: 1rem;
 }
 
-.eliminated-icon {
+.eliminatedIcon {
   font-size: 1.8rem;
 }
 
-.eliminated-text {
+.eliminatedText {
   display: flex;
   flex-direction: column;
 }
 
-.eliminated-text strong {
+.eliminatedText strong {
   font-size: 0.95rem;
 }
 
-.eliminated-text span {
+.eliminatedText span {
   font-size: 0.8rem;
   opacity: 0.7;
 }
@@ -357,7 +387,7 @@ button.danger:hover {
 }
 
 /* ── Turn indicator ────────────────────────── */
-.turn-indicator {
+.turnIndicator {
   text-align: center;
   padding: 0.6rem;
   background: #533483;
@@ -366,41 +396,48 @@ button.danger:hover {
   font-weight: 600;
 }
 
-.turn-indicator.my-turn {
+.myTurn {
   background: #e94560;
 }
 
 /* ── Round end / Game end ──────────────────── */
-.results-table {
+.gameEndMessage {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.resultsTable {
   width: 100%;
   border-collapse: collapse;
   margin-top: 0.5rem;
 }
 
-.results-table th,
-.results-table td {
+.resultsTable th,
+.resultsTable td {
   padding: 0.5rem;
   text-align: left;
   border-bottom: 1px solid #333;
 }
 
-.results-table th {
+.resultsTable th {
   color: #e94560;
 }
 
 /* ── Flip three result ─────────────────────── */
-.flip-result {
+.flipResult {
   background: #16213e;
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
 }
 
-.flip-result h2 {
+.flipResult h2 {
   font-size: 1rem;
+  margin-bottom: 0;
 }
 
-.flip-card {
+.flipCard {
   display: inline-block;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
@@ -408,24 +445,33 @@ button.danger:hover {
   font-size: 0.85rem;
 }
 
-.flip-card.added {
+.added {
   background: #0a5;
 }
 
-.flip-card.stored {
+.stored {
   background: #533483;
 }
 
-.flip-card.busted {
+.busted {
   background: #a00;
 }
 
-.flip-card.freeze {
+.freeze {
   background: #0af;
 }
 
+.extra_health_used {
+  background: #2a7a3a;
+}
+
+.not_applied {
+  background: #444;
+  opacity: 0.5;
+}
+
 /* ── Confirm round ─────────────────────────── */
-.confirm-section {
+.confirmSection {
   background: #16213e;
   border-radius: 8px;
   padding: 1rem;
@@ -433,54 +479,44 @@ button.danger:hover {
   text-align: center;
 }
 
-.confirm-section p {
+.confirmCount {
+  margin-bottom: 0.5rem;
   color: #aaa;
 }
 
-/* ── Confirmed players chips ───────────────── */
-.confirmed-players {
+.confirmedPlayers {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
   justify-content: center;
 }
 
-.confirmed-chip {
+.confirmedChip {
   padding: 0.3rem 0.6rem;
   border-radius: 4px;
   font-size: 0.85rem;
   font-weight: 600;
 }
 
-.confirmed-chip.confirmed {
+.confirmed {
   background: #0a5;
   color: #fff;
 }
 
-.confirmed-chip.pending {
+.pending {
   background: #333;
   color: #888;
 }
 
-/* ── Flip three extra_health_used effect ───── */
-.flip-card.extra_health_used {
-  background: #2a7a3a;
-}
-
-.flip-card.not_applied {
-  background: #444;
-  opacity: 0.5;
-}
-
 /* ── Duplicate highlight in hand ───────────── */
-.card-chip.duplicate-active {
+.duplicateActive {
   background: #e94560;
   color: #fff;
   font-weight: 700;
-  animation: pulse-duplicate 1s ease-in-out infinite;
+  animation: pulseDuplicate 1s ease-in-out infinite;
 }
 
-.card-chip.duplicate-saved {
+.duplicateSaved {
   background: #2a7a3a;
   color: #fff;
   font-weight: 700;
@@ -488,14 +524,14 @@ button.danger:hover {
   opacity: 0.7;
 }
 
-.card-chip.extra-health-used {
+.extraHealthUsed {
   background: #0a5;
   color: #fff;
   font-weight: 700;
-  animation: pulse-duplicate 1s ease-in-out infinite;
+  animation: pulseDuplicate 1s ease-in-out infinite;
 }
 
-@keyframes pulse-duplicate {
+@keyframes pulseDuplicate {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
 }
